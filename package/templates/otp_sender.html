@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Xác thực OTP Sender</title>
+</head>
+<body>
+    <h1>Xác thực OTP Sender</h1>
+    <form action="/unlock_locker" method="post">
+        <input type="hidden" name="otp_sender" value="{{ otp_sender }}">
+        <label for="otp">Nhập mã OTP:</label>
+        <input type="text" id="otp" name="otp" required>
+        <button type="submit">Xác thực và mở tủ</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nhập mã OTP_deliver lần thứ hai</title>
+</head>
+<body>
+    <h1>Nhập mã OTP_deliver lần thứ hai</h1>
+    <p>Vui lòng nhập lại mã OTP_deliver để mở tủ mới.</p>
+    <form method="post" action="/open_new_locker">
+        <input type="text" id="otp_deliver" name="otp_deliver" required>
+        <input type="hidden" name="locker_id" value="{{ locker_id }}">
+        <button type="submit">Mở tủ mới</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kết thúc nhận hàng</title>
+</head>
+<body>
+    <h1>Kết thúc nhận hàng</h1>
+    <p>Tủ số {{ locker_id }} đã được đóng.</p>
+    <p>Xin vui lòng nhấn vào nút bên dưới để tiếp tục.</p>
+    <form method="post" action="/select_random_locker">
+        <input type="hidden" name="locker_id" value="{{ locker_id }}">
+        <button type="submit">Tiếp tục</button>
+    </form>
+</body>
+</html>

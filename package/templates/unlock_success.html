@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mở tủ thành công</title>
+</head>
+<body>
+    <h1>Tủ số {{ locker_number }} đã được mở thành công!</h1>
+    <h1>Vui lòng bỏ hàng vào tủ</h1>
+     <form action="/close_locker" method="POST">
+        <!-- Thêm trường ẩn để chứa giá trị codeorders -->
+        <input type="hidden" name="codeorders" value="{{ codeorders }}">
+        <button type="submit">Đóng cửa tủ, kết thúc!</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tủ đã được mở</title>
+</head>
+<body>
+    <h1>Tủ đã được mở</h1>
+    <p>Tủ số {{ locker_id }} đã được mở.</p>
+    <p>Bạn có thể mở tủ để lấy hàng.</p>
+
+    <form method="post" action="/finish_delivery">
+        <input type="hidden" name="locker_id" value="{{ locker_id }}">
+        <button type="submit">Kết thúc nhận hàng</button>
+    </form>
+</body>
+</html>

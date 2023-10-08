@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+   <head>
+         <title>Đăng nhập</title>
+         <meta charset="utf-8">
+         <meta name="viewport" content="width=device-width, initial-scale=1">
+         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+           <style>
+               body {
+                   font-family: Arial, sans-serif;
+                   margin: 0;
+                   padding: 0;
+               }
+               header {
+                   text-align: center;
+                   padding: 10px;
+               }
+               container {
+                   max-width: 1200px;
+                   padding: 20px;
+               }
+               footer {
+                  text-align: center;
+                   clear: both;
+                   padding: 10px;
+                   position: fixed;
+                   bottom: 0;
+                   width: 100%;
+               }
+           </style>
+   </head>
+   <body>
+       <header>
+           <div>
+              <nav class="navbar navbar-inverse">
+                 <div class="container-fluid">
+                   <div class="navbar-header">
+                     <a class="navbar-brand" href="#">SMART-LOCKER</a>
+                   </div>
+                   <ul class="nav navbar-nav">
+
+
+                       <li><a href="{{ url_for('home') }}">Trang chủ</a></li>
+                       <li><a href="{{ url_for('register') }}">Đăng ký</a></li>
+                       <li><a href="{{ url_for('login') }}">Đăng nhập</a></li>
+                   </ul>
+                 </div>
+              </nav>
+           </div>
+       </header>
+       <container>
+           <form method="POST" action="{{ url_for('register') }}">
+               <div class="form-floating mb-3 mt-3">
+                    <label for="name">Họ và tên:</label>
+                    <input type="name" class="form-control" id="name" placeholder="Enter name" name="name" required>
+               </div>
+               <div class="form-floating mb-3 mt-3">
+                    <label for="email">Email:</label>
+                    <input type="email" class="form-control" id="email" placeholder="Enter email" name="email" required>
+               </div>
+               <div class="form-floating mb-3 mt-3">
+                     <label for="phone">Số điện thoại:</label>
+                     <input type="tel" class="form-control" id="phone" placeholder="Enter phone" name="phone" required>
+               </div>
+               <div class="form-floating mb-3 mt-3">
+                     <label for="password">Mật khẩu:</label>
+                     <input type="password" class="form-control"  id="password" placeholder="Enter password" name="password" required>
+
+
+               </div>
+               <div class="form-floating mb-3 mt-3">
+                     <label for="confirm_password">Xác nhận mật khẩu:</label>
+                     <input type="password" class="form-control"  id="confirm_password" placeholder="Enter password" name="confirm_password" required>
+
+
+               </div>
+                     <label for="role">Quyền:</label>
+                               <select id="role" name="role">
+                                   <option value="user">Người dùng</option>
+                                   <option value="delivery">Người giao hàng</option>
+                               </select><br>
+
+
+               </div>
+                    <button type="submit" class="btn btn-primary">Đăng ký</button>
+           </form>
+
+
+               <p>Đã có tài khoản? <a href="{{ url_for('login') }}">Đăng nhập</a></p>
+        </container>
+   </body>
+</html>
