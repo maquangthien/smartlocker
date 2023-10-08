@@ -6,5 +6,9 @@
 <body>
     <h1>Tủ đã được mở</h1>
     <p>Tủ số: {{ locker_id }}</p>
+    <p>Vui lòng bỏ hàng vào</p>
+    <form action="/finishtwo_delivery" method="post">
+        <button type="submit"> Đóng tủ và kết thúc đơn hàng </button>
+    </form>
 </body>
 </html>
