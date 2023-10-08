@@ -123,6 +123,7 @@ def user():
     else:
         return redirect(url_for('login'))
 
+
 @app.route('/logout')
 def logout():
     session.clear()
@@ -345,7 +346,6 @@ def close_locker():
     available_locker = cursor.fetchone()
 
     if available_locker:
-        # Nếu có tủ trống, thực hiện các thao tác cần thiết (ví dụ: cập nhật trạng thái, lưu lịch sử)
         locker_id = available_locker[0]
 
         # Lấy mã OTP_deliver từ bảng otps, sử dụng codeorders từ biến session
@@ -366,7 +366,7 @@ def close_locker():
                 if shipper_email:
                     otp_deliver = otp_deliver[0]  # Lấy giá trị của mã OTP_deliver
 
-                    # Gửi mã OTP_deliver cho người giao hàng (sử dụng địa chỉ email của người giao hàng)
+                            # Gửi mã OTP_deliver cho người giao hàng (sử dụng địa chỉ email của người giao hàng)
                     if send_otp_deliver(shipper_email[0], otp_deliver):
                         # Cập nhật user_deliver trong bảng histories
                         cursor.execute(
@@ -447,7 +447,6 @@ def locker_opened():
 
     opened_lockers = opened_lockers_result[0] if opened_lockers_result else 0
 
-    # Truyền giá trị vào trang HTML và hiển thị
     return render_template('locker_opened.html', locker_id=locker_id, opened_lockers=opened_lockers)
 
 @app.route('/finish_delivery', methods=['POST'])
@@ -503,14 +502,166 @@ def open_new_locker():
                 db.commit()
 
                 # Xóa thông tin về mã OTP_deliver đã sử dụng
-                cursor.execute("DELETE FROM otpprocessing WHERE codeorders = %s", (session['codeorders'],))
-                db.commit()
+                # cursor.execute("DELETE FROM otpprocessing WHERE codeorders = %s", (session['codeorders'],))
+                # db.commit()
 
                 cursor.close()
 
                 return render_template('deliver_locker_opened.html', locker_id=locker_id[0])
 
     return "Mã OTP không hợp lệ hoặc không tìm thấy trong dữ liệu POST."
+
+def send_otp_receiver(mail, otp_receiver ):
+    smtp_server = "smtp.gmail.com"
+    smtp_port = 587
+    smtp_username = "2051010118huyen@ou.edu.vn"
+    smtp_password = "nguyenthithuhuyen"
+
+    # Tạo email
+    msg = MIMEMultipart()
+    msg['From'] = "2051010118huyen@ou.edu.vn"
+    msg['To'] = mail
+    msg['Subject'] = "Mã OTP nhận hàng "
+
+    body = f"Mã OTP là: {otp_receiver }\nVui lòng không cung cấp mã này cho bất kì ai. Mã OTP có thời gian sử dụng là 3 tiếng."
+    msg.attach(MIMEText(body, 'plain'))
+
+    try:
+        # Gửi email
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()
+        server.login(smtp_username, smtp_password)
+        server.sendmail(smtp_username, mail, msg.as_string())
+        server.quit()
+        return True
+    except Exception as e:
+        print(f"Lỗi khi gửi email: {str(e)}")
+        return False
+
+@app.route('/finishtwo_delivery', methods=['POST'])
+def finishtwo_delivery():
+    cursor = db.cursor()
+
+    if request.method == 'POST':
+        # Lấy mã otp_receiver từ bảng otps sử dụng codeorders từ biến session
+        cursor.execute("SELECT otp_receiver FROM otps WHERE codeorders = %s", (session['codeorders'],))
+        otp_receiver = cursor.fetchone()
+
+        if otp_receiver:
+            otp_receiver = otp_receiver[0]  # Lấy giá trị otp_receiver từ tuple
+
+            # Truy vấn user_id của người nhận hàng (user_receiver) trong bảng histories qua codeorders
+            cursor.execute("SELECT user_receiver FROM histories WHERE codeorders = %s", (session['codeorders'],))
+            user_receiver = cursor.fetchone()
+
+            if user_receiver:
+                user_receiver = user_receiver[0]  # Lấy giá trị user_receiver từ tuple
+
+                # Truy vấn địa chỉ email của người nhận hàng từ bảng users
+                cursor.execute("SELECT mail FROM users WHERE user_id = %s", (user_receiver,))
+                email_receiver = cursor.fetchone()
+
+                if email_receiver:
+                    email_receiver = email_receiver[0]  # Lấy địa chỉ email từ tuple
+
+                    # Gửi mã otp_receiver cho người nhận hàng (user_receiver) qua email
+                    if send_otp_receiver(email_receiver, otp_receiver):
+                        # Kiểm tra xem có bất kỳ bản ghi nào có cùng giá trị codeorders
+                        cursor.execute("UPDATE otpprocessing SET user_id = %s, otp = %s WHERE codeorders = %s", (user_receiver, otp_receiver, session['codeorders']))
+                        db.commit()
+
+                        cursor.close()
+
+                        return "Đã cập nhật thông tin User Receiver và OTP trong bảng otpprocessing."
+                    else:
+                        return "Không thể gửi email cho người nhận hàng. Vui lòng kiểm tra cài đặt email của hệ thống."
+                else:
+                    return "Không tìm thấy địa chỉ email của người nhận hàng trong hệ thống."
+            else:
+                return "Không tìm thấy thông tin người nhận hàng hoặc dữ liệu POST không hợp lệ."
+    return "Không tìm thấy thông tin hoặc dữ liệu POST không hợp lệ."
+
+
+@app.route('/receiver_verify_otp', methods=['GET', 'POST'])
+def receiver_verify_otp():
+    return render_template('otp_receiver.html')
+@app.route('/receiver_otp', methods=['POST'])
+def receiver_otp():
+    if request.method == 'POST':
+        entered_otp = request.form['otp']  # Lấy mã OTP được nhập từ biểu mẫu
+
+        if 'user_id' in session:
+            user_id = session['user_id']  # Lấy user_id từ biến session
+
+            # Làm các thao tác kiểm tra mã OTP và user_id trong bảng otpprocessing ở đây
+            cursor = db.cursor()
+            cursor.execute("SELECT locker_id FROM otpprocessing WHERE otp = %s AND user_id = %s",
+                           (entered_otp, user_id))
+            locker_info = cursor.fetchone()
+            cursor.close()
+
+            if locker_info:
+                locker_id = locker_info[0]  # Lấy giá trị locker_id từ tuple
+
+                session['locker_id'] = locker_id
+
+                session['entered_otp'] = entered_otp
+                # Nếu mã OTP và user_id trùng khớp, hiển thị locker_id
+                return render_template('otp_verification_result.html', locker_id=locker_id)
+
+            else:
+                # Nếu không trùng khớp, hiển thị thông báo lỗi
+                return "Mã OTP hoặc user_id không hợp lệ. Vui lòng thử lại."
+
+        else:
+            # Xử lý trường hợp không có user_id trong biến session
+            return "Vui lòng đăng nhập để xác minh OTP."
+
+        # Hiển thị biểu mẫu nhập OTP (bạn có thể thay đổi HTML tùy ý)
+    return render_template('otp_receiver.html')
+
+
+@app.route('/complete_receiver', methods=['POST'])
+def complete_receiver():
+    if 'user_id' in session:
+        user_id = session['user_id']
+        entered_otp = session.get('entered_otp')
+
+        if entered_otp:
+            cursor = db.cursor()
+
+            # Lấy giá trị locker_id từ biến session
+            locker_id = session.get('locker_id')
+
+            # Kiểm tra locker_id đã được đặt trong biến session hay chưa
+            if locker_id is not None:
+                # Cập nhật trạng thái tủ locker_id trong bảng lockers về 'off'
+                cursor.execute("UPDATE lockers SET status = 'off' WHERE locker_id = %s", (locker_id,))
+
+                # Cập nhật thời gian kết thúc đơn hàng (end_time) vào bảng histories
+                current_time = datetime.now()
+                end_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
+                cursor.execute("UPDATE histories SET end_time = %s WHERE codeorders = %s",
+                               (end_time, entered_otp))
+                db.commit()
+
+                # Xóa các thông tin liên quan khỏi biến session
+                session.pop('entered_otp', None)
+                session.pop('locker_id', None)
+
+                # Rest of your code
+                # ...
+
+                return "Bạn đã hoàn thành việc lấy hàng. Tủ đã được đóng."
+            else:
+                return "Không thể cập nhật trạng thái tủ vì locker_id không được đặt trong biến session."
+        else:
+            # Xử lý trường hợp không có entered_otp trong biến session
+            return "Vui lòng đăng nhập và xác thực OTP để hoàn thành việc lấy hàng."
+    else:
+        # Xử lý trường hợp không có user_id trong biến session
+        return "Vui lòng đăng nhập để xác thực OTP và hoàn thành việc lấy hàng."
+
 
 if __name__ == '__main__':
     app.run()
