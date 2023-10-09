@@ -134,7 +134,6 @@ def logout():
 @app.route('/process_locker', methods=['POST'])
 def process_locker():
     cursor = db.cursor()
-
     try:
         if request.method == 'POST':
             name = request.form['name']
@@ -347,14 +346,11 @@ def close_locker():
 
     if available_locker:
         locker_id = available_locker[0]
-
-        # Lấy mã OTP_deliver từ bảng otps, sử dụng codeorders từ biến session
         codeorders = session.get('codeorders')
         cursor.execute("SELECT otp_deliver FROM otps WHERE codeorders = %s", (codeorders,))
         otp_deliver = cursor.fetchone()
 
         if otp_deliver:
-            # Truy vấn user_id của người giao hàng (shipper) dựa trên role_id
             cursor.execute("SELECT user_id FROM users WHERE role_id = 3")
             shipper_user_id = cursor.fetchone()
 
@@ -366,7 +362,6 @@ def close_locker():
                 if shipper_email:
                     otp_deliver = otp_deliver[0]  # Lấy giá trị của mã OTP_deliver
 
-                            # Gửi mã OTP_deliver cho người giao hàng (sử dụng địa chỉ email của người giao hàng)
                     if send_otp_deliver(shipper_email[0], otp_deliver):
                         # Cập nhật user_deliver trong bảng histories
                         cursor.execute(
@@ -588,10 +583,10 @@ def receiver_verify_otp():
 @app.route('/receiver_otp', methods=['POST'])
 def receiver_otp():
     if request.method == 'POST':
-        entered_otp = request.form['otp']  # Lấy mã OTP được nhập từ biểu mẫu
+        entered_otp = request.form['otp']
 
         if 'user_id' in session:
-            user_id = session['user_id']  # Lấy user_id từ biến session
+            user_id = session['user_id']
 
             # Làm các thao tác kiểm tra mã OTP và user_id trong bảng otpprocessing ở đây
             cursor = db.cursor()
@@ -626,11 +621,10 @@ def complete_receiver():
     if 'user_id' in session:
         user_id = session['user_id']
         entered_otp = session.get('entered_otp')
-
+        print("entered_otp:", entered_otp)
         if entered_otp:
             cursor = db.cursor()
 
-            # Lấy giá trị locker_id từ biến session
             locker_id = session.get('locker_id')
 
             # Kiểm tra locker_id đã được đặt trong biến session hay chưa
@@ -649,8 +643,7 @@ def complete_receiver():
                 session.pop('entered_otp', None)
                 session.pop('locker_id', None)
 
-                # Rest of your code
-                # ...
+                cursor.close()
 
                 return "Bạn đã hoàn thành việc lấy hàng. Tủ đã được đóng."
             else:
@@ -661,6 +654,7 @@ def complete_receiver():
     else:
         # Xử lý trường hợp không có user_id trong biến session
         return "Vui lòng đăng nhập để xác thực OTP và hoàn thành việc lấy hàng."
+
 
 
 if __name__ == '__main__':
