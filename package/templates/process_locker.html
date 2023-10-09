@@ -1,94 +1,108 @@
 <!DOCTYPE html>
 <html>
-   <head>
-         <title>Đặt tủ</title>
-         <meta charset="utf-8">
-         <meta name="viewport" content="width=device-width, initial-scale=1">
-         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
-         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-           <style>
-               body {
-                   font-family: Arial, sans-serif;
-                   margin: 0;
-                   padding: 0;
-               }
-               header {
-                   text-align: center;
-                   padding: 10px;
-               }
-               container {
-                   max-width: 1200px;
-                   margin: 0 auto;
-                   padding: 20px;
-               }
-               footer {
-                  text-align: center;
-                   clear: both;
-                   padding: 10px;
-                   position: fixed;
-                   bottom: 0;
-                   width: 100%;
-               }
-               h1{
-               text-align: center;
-               }
-           </style>
-   </head>
-   <body>
-       <header>
-           <div>
-              <nav class="navbar navbar-inverse">
-                 <div class="container-fluid">
-                   <div class="navbar-header">
-                     <a class="navbar-brand" href="#">SMART-LOCKER</a>
-                   </div>
-                   <ul class="nav navbar-nav">
+<head>
+    <title>Đặt tủ</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            text-align: center;
+            padding: 10px;
+        }
+        container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        footer {
+           text-align: center;
+            clear: both;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+        h1{
+        text-align: center;
+        }
 
+        .dropdown-submenu {
+            position: relative;
+        }
 
-                       <li><a href="">Trang chủ</a></li>
-                       <li><a href="">Thông báo</a></li>
-                       <li><a href="">Lịch sử dùng tủ</a></li>
-                        <li><a href="">Tài khoản người dùng</a></li>
-                            <li><a href="{{ url_for('receiver_verify_otp') }}">Nhập mã otp nhận hàng</a></li>
-                   </ul>
-                 </div>
-              </nav>
-           </div>
+        .dropdown-submenu .dropdown-menu {
+            top: 0;
+            left: 100%;
+            margin-top: -1px;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div>
+        <nav class="navbar navbar-inverse">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#">SMART-LOCKER</a>
+                </div>
+                <ul class="nav navbar-nav">
+                    <li><a href="">Trang chủ</a></li>
+                    <li><a href="">Thông báo</a></li>
+                    <li><a href="">Lịch sử dùng tủ</a></li>
+                    <li class="dropdown">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Xin chào, {{ user_name }}
+                            <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#">Thông tin cá nhân</a></li>
+                            <li><a href="#">Lịch sử đặt hàng</a></li>
+                            <li><a href="/logout">Đăng xuất</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="{{ url_for('receiver_verify_otp') }}">Nhập mã otp nhận hàng</a></li>
+                </ul>
+            </div>
+        </nav>
+    </div>
 
+</header>
+<container>
+    <h1>Đặt lịch sử dụng Smart Locker</h1>
+    <form action="/process_locker" method="post">
+        <div class="form-floating mb-3 mt-3">
+            <label for="name">Họ và tên:</label>
+            <input type="name" class="form-control" id="name" placeholder="Enter name" name="name" required>
+        </div>
+        <div class="form-floating mb-3 mt-3">
+            <label for="mail">Email:</label>
+            <input type="mail" class="form-control" id="mail" placeholder="Enter email" name="mail" required>
+        </div>
+        <div class="form-floating mb-3 mt-3">
+            <label for="phone">Số điện thoại:</label>
+            <input type="tel" class="form-control" id="phone" placeholder="Enter phone" name="phone" required>
+        </div>
+        <div class="form-floating mb-3 mt-3">
+            <label for="name1">Họ và tên người nhận:</label>
+            <input type="name1" class="form-control" id="name1" placeholder="Enter name" name="name1" required>
+        </div>
+        <div class="form-floating mb-3 mt-3">
+            <label for="phone1">Số điện thoại người nhận:</label>
+            <input type="tel" class="form-control" id="phone1" placeholder="Enter phone" name="phone1" required>
+        </div>
+        <label for="start_time">Thời gian đặt:</label>
+        <input type="datetime-local" id="start_time" name="start_time" required><br><br>
+        </select><br><br>
 
-       </header>
-       <container>
-           <h1>Đặt lịch sử dụng Smart Locker</h1>
-              <form action="/process_locker" method="post">
-                  <div class="form-floating mb-3 mt-3">
-                    <label for="name">Họ và tên:</label>
-                    <input type="name" class="form-control" id="name" placeholder="Enter name" name="name" required>
-               </div>
-               <div class="form-floating mb-3 mt-3">
-                    <label for="mail">Email:</label>
-                    <input type="mail" class="form-control" id="mail" placeholder="Enter email" name="mail" required>
-               </div>
-               <div class="form-floating mb-3 mt-3">
-                     <label for="phone">Số điện thoại:</label>
-                     <input type="tel" class="form-control" id="phone" placeholder="Enter phone" name="phone" required>
-               </div>
-                  <div class="form-floating mb-3 mt-3">
-                    <label for="name1">Họ và tên người nhận:</label>
-                    <input type="name1" class="form-control" id="name1" placeholder="Enter name" name="name1" required>
-               </div>
-               <div class="form-floating mb-3 mt-3">
-                     <label for="phone1">Số điện thoại người nhận:</label>
-                     <input type="tel" class="form-control" id="phone1" placeholder="Enter phone" name="phone1" required>
-               </div>
-                     <label for="start_time">Thời gian đặt:</label>
-                     <input type="datetime-local" id="start_time" name="start_time" required><br><br>
-                     </select><br><br>
+        <input type="submit" value="Đặt tủ ">
+    </form>
+</container>
 
-                 <input type="submit" value="Đặt tủ ">
-             </form>
-       </container>
-
-
-   </body>
+</body>
 </html>
