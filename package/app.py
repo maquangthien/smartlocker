@@ -130,7 +130,18 @@ def logout():
     session.pop('user_id', None)
     return redirect(url_for('login'))
 
-
+@app.route('/history', methods=['GET'])
+def history():
+    if 'user_id' in session:
+        user_id = session['user_id']
+        cursor = db.cursor()
+        cursor.execute("SELECT codeorders, user_sender, user_receiver, start_time, end_time FROM histories WHERE user_sender = %s OR user_receiver = %s", (user_id, user_id))
+        histories = cursor.fetchall()
+        cursor.close()
+        print(histories)
+        return render_template('history.html', histories=histories)
+    else:
+        return "Vui lòng đăng nhập để xem lịch sử sử dụng tủ."
 @app.route('/process_locker', methods=['POST'])
 def process_locker():
     cursor = db.cursor()
@@ -183,16 +194,14 @@ def process_locker():
                             (codeorders, user_sender, user_receiver[0], start_time))
                         db.commit()
 
-                        # Lưu thông tin mã OTP và codeorders vào biến session
                         session['otp_sender'] = otp_sender
                         session['otp_deliver'] = otp_deliver
                         session['otp_receiver'] = otp_receiver
-                        session['codeorders'] = codeorders  # Lưu codeorders vào session
+                        session['codeorders'] = codeorders
 
                         cursor.close()
 
                         if send_otp_sender(mail, otp_sender):
-                            # Chuyển hướng người gửi đến trang otp_sender.html
                             return redirect(url_for('otp_sender'))
                     else:
                         return "Số điện thoại người nhận không tồn tại trong hệ thống."
@@ -233,7 +242,6 @@ def send_otp_sender(mail, otp_sender):
     msg.attach(MIMEText(body, 'plain'))
 
     try:
-        # Gửi email
         server = smtplib.SMTP(smtp_server, smtp_port)
         server.starttls()
         server.login(smtp_username, smtp_password)
@@ -412,12 +420,8 @@ def validate_otp():
         otp_deliver = session.get('otp_deliver')
 
         if entered_otp == otp_deliver:
-            # Mã OTP đúng, mở tủ để lấy hàng (thực hiện các thao tác cần thiết)
-
-            # Xóa mã OTP_deliver sau khi đã sử dụng
             session.pop('otp_deliver', None)
 
-            # Điều hướng đến trang thông báo tủ đã được mở
             return redirect(url_for('locker_opened'))
         else:
             # Mã OTP không đúng, hiển thị thông báo lỗi
@@ -543,7 +547,7 @@ def finishtwo_delivery():
         otp_receiver = cursor.fetchone()
 
         if otp_receiver:
-            otp_receiver = otp_receiver[0]  # Lấy giá trị otp_receiver từ tuple
+            otp_receiver = otp_receiver[0]
 
             # Truy vấn user_id của người nhận hàng (user_receiver) trong bảng histories qua codeorders
             cursor.execute("SELECT user_receiver FROM histories WHERE codeorders = %s", (session['codeorders'],))
@@ -627,33 +631,40 @@ def complete_receiver():
 
             locker_id = session.get('locker_id')
 
-            # Kiểm tra locker_id đã được đặt trong biến session hay chưa
             if locker_id is not None:
                 # Cập nhật trạng thái tủ locker_id trong bảng lockers về 'off'
                 cursor.execute("UPDATE lockers SET status = 'off' WHERE locker_id = %s", (locker_id,))
 
-                # Cập nhật thời gian kết thúc đơn hàng (end_time) vào bảng histories
-                current_time = datetime.now()
-                end_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
-                cursor.execute("UPDATE histories SET end_time = %s WHERE codeorders = %s",
-                               (end_time, entered_otp))
-                db.commit()
+                # Lấy giá trị codeorders từ bảng otpprocessing dựa trên mã OTP
+                cursor.execute("SELECT codeorders FROM otpprocessing WHERE otp = %s", (entered_otp,))
+                codeorders = cursor.fetchone()
+                if codeorders:
+                    codeorders = codeorders[0]  # Lấy giá trị codeorders từ tuple
 
-                # Xóa các thông tin liên quan khỏi biến session
-                session.pop('entered_otp', None)
-                session.pop('locker_id', None)
+                    # Cập nhật thời gian kết thúc đơn hàng (end_time) vào bảng histories
+                    current_time = datetime.now()
+                    end_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
+                    cursor.execute("UPDATE histories SET end_time = %s WHERE codeorders = %s",
+                                   (end_time, codeorders))
+                    db.commit()
 
-                cursor.close()
+                    # Xóa các thông tin liên quan khỏi biến session
+                    session.pop('entered_otp', None)
+                    session.pop('locker_id', None)
 
-                return "Bạn đã hoàn thành việc lấy hàng. Tủ đã được đóng."
+                    cursor.close()
+
+                    return "Bạn đã hoàn thành việc lấy hàng. Tủ đã được đóng."
+                else:
+                    return "Không thể tìm thấy mã đơn hàng (codeorders) dựa trên mã OTP."
+
             else:
                 return "Không thể cập nhật trạng thái tủ vì locker_id không được đặt trong biến session."
         else:
-            # Xử lý trường hợp không có entered_otp trong biến session
             return "Vui lòng đăng nhập và xác thực OTP để hoàn thành việc lấy hàng."
     else:
-        # Xử lý trường hợp không có user_id trong biến session
         return "Vui lòng đăng nhập để xác thực OTP và hoàn thành việc lấy hàng."
+
 
 
 
