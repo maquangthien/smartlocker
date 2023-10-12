@@ -34,11 +34,9 @@ def generate_user_id():
 
     return user_id
 
-
 @app.route('/')
 def home():
     return render_template('index.html')
-
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -50,11 +48,9 @@ def register():
         confirm_password = request.form['confirm_password']
         role = request.form['role']
 
-        # Kiểm tra xác nhận mật khẩu
         if password != confirm_password:
             return "Mật khẩu và xác nhận mật khẩu không khớp"
 
-        # Lấy role_id tương ứng với quyền được chọn
         cursor = db.cursor()
         cursor.execute("SELECT role_id FROM roles WHERE role_name = %s", (role,))
         role_id = cursor.fetchone()[0]
@@ -65,10 +61,8 @@ def register():
         if existing_user:
             return "Số điện thoại đã tồn tại. Vui lòng nhập số điện thoại khác."
 
-        # Tạo user_id mới
         user_id = generate_user_id()
 
-        # Tiến hành lưu thông tin vào bảng users
         insert_query = "INSERT INTO users (user_id, name, mail, phone, role_id, password) VALUES (%s, %s, %s, %s, %s, %s)"
         values = (user_id, name, email, phone, role_id, password)
         cursor.execute(insert_query, values)
@@ -79,6 +73,46 @@ def register():
         return redirect(url_for('login'))
 
     return render_template('register.html')
+
+from flask import flash, redirect
+
+@app.route('/update_profile', methods=['GET', 'POST'])
+def update_profile():
+    if 'user_id' in session:
+        user_id = session['user_id']
+        cursor = db.cursor()
+
+        if request.method == 'POST':
+            new_name = request.form['name']
+            new_mail = request.form['mail']
+            new_phone = request.form['phone']
+
+            cursor.execute("UPDATE users SET name = %s, mail = %s, phone = %s WHERE user_id = %s",
+                           (new_name, new_mail, new_phone, user_id))
+            db.commit()
+
+            cursor.execute("SELECT name, mail, phone FROM users WHERE user_id = %s", (user_id,))
+            user_info = cursor.fetchone()
+            user_name = user_info[0]
+            user_mail = user_info[1]
+            user_phone = user_info[2]
+
+            cursor.close()
+
+            flash('Cập nhật thông tin cá nhân thành công', 'success')  # Thêm thông báo thành công
+            return redirect(url_for('process_locker'))
+
+        cursor.execute("SELECT name, mail, phone FROM users WHERE user_id = %s", (user_id,))
+        user_info = cursor.fetchone()
+        user_name = user_info[0]
+        user_mail = user_info[1]
+        user_phone = user_info[2]
+
+        cursor.close()
+        return render_template('update_profile.html', user_name=user_name, user_mail=user_mail, user_phone=user_phone)
+
+    return "Vui lòng đăng nhập để cập nhật thông tin cá nhân."
+
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -123,7 +157,6 @@ def user():
     else:
         return redirect(url_for('login'))
 
-
 @app.route('/logout')
 def logout():
     session.clear()
@@ -138,19 +171,25 @@ def history():
         cursor.execute("SELECT codeorders, user_sender, user_receiver, start_time, end_time FROM histories WHERE user_sender = %s OR user_receiver = %s", (user_id, user_id))
         histories = cursor.fetchall()
         cursor.close()
-        print(histories)
+
+        for i, history in enumerate(histories):
+            histories[i] = list(history)
+            if history[-1] is None:
+                histories[i][-1] = "Chưa hoàn thành"
+
         return render_template('history.html', histories=histories)
     else:
         return "Vui lòng đăng nhập để xem lịch sử sử dụng tủ."
-@app.route('/process_locker', methods=['POST'])
+
+@app.route('/process_locker', methods=['GET', 'POST'])
 def process_locker():
-    cursor = db.cursor()
-    try:
-        if request.method == 'POST':
+    if request.method == 'POST':
+        cursor = db.cursor()
+        try:
             name = request.form['name']
             mail = request.form['mail']
             phone = request.form['phone']
-            user_receiver_phone = request.form['phone1']  # Lấy số điện thoại người nhận từ biểu mẫu
+            user_receiver_phone = request.form['phone1']
             start_time = request.form['start_time']
 
             # Kiểm tra xem số điện thoại của người gửi có tồn tại trong bảng "users" hay không
@@ -158,37 +197,31 @@ def process_locker():
             user = cursor.fetchone()
 
             if user:
-                # Kiểm tra xem có tủ nào có status "off" không
                 cursor.execute("SELECT locker_id FROM lockers WHERE status = 'off' LIMIT 1")
                 available_locker = cursor.fetchone()
 
                 if available_locker:
                     locker_id = available_locker[0]
 
-                    # Lấy user_id của người nhận dựa trên số điện thoại của người nhận
                     cursor.execute("SELECT user_id FROM users WHERE phone = %s", (user_receiver_phone,))
                     user_receiver = cursor.fetchone()
 
                     if user_receiver:
-                        user_sender = user[0]  # Đây là user_id của người gửi, bạn cần lấy từ user đã đăng nhập
+                        user_sender = user[0]
                         start_time = datetime.now()
 
-                        # Tạo mã OTP cho từng người liên quan
                         otp_sender = generate_otp()
                         otp_deliver = generate_otp()
                         otp_receiver = generate_otp()
                         expiration_time = datetime.now() + timedelta(hours=3)
 
-                        # Tạo mã codeorders và lưu vào biến
                         codeorders = generate_random_code()
 
-                        # Lưu các mã OTP vào bảng "otps"
                         cursor.execute(
                             "INSERT INTO otps (otp_sender, otp_deliver, otp_receiver, expiration_time, codeorders) VALUES (%s, %s, %s, %s, %s)",
                             (otp_sender, otp_deliver, otp_receiver, expiration_time, codeorders))
                         db.commit()
 
-                        # Sử dụng cùng biến codeorders trong truy vấn SQL và khi gán giá trị vào bảng "histories"
                         cursor.execute(
                             "INSERT INTO histories (codeorders, user_sender, user_receiver, start_time) VALUES (%s, %s, %s, %s)",
                             (codeorders, user_sender, user_receiver[0], start_time))
@@ -210,10 +243,10 @@ def process_locker():
             else:
                 return "Số điện thoại người gửi không tồn tại trong hệ thống."
 
-    except Exception as e:
-        # Xử lý lỗi ở đây nếu có
-        return str(e)
+        except Exception as e:
+            return str(e)
     return render_template('process_locker.html')
+
 
 
 def generate_random_code():
@@ -271,7 +304,7 @@ def unlock_locker():
             cursor = db.cursor()
 
             # Tìm tủ trống (status='off')
-            cursor.execute("SELECT locker_id FROM lockers WHERE status = 'off' LIMIT 1")
+            cursor.execute("SELECT locker_id FROM lockers WHERE status = 'off' ORDER BY RAND() LIMIT 1")
             available_locker = cursor.fetchone()
 
             if available_locker:
