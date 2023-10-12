@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cập nhật thông tin cá nhân</title>
+</head>
+<body>
+    <h1>Cập nhật thông tin cá nhân</h1>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul>
+        {% for message in messages %}
+        <li class="alert alert-{{ message[1] }}">{{ message[0] }}</li>
+        {% endfor %}
+    </ul>
+    <script>
+        setTimeout(function () {
+            window.location.href = "{{ url_for('process_locker') }}";
+        }, 3000);  <!-- Chuyển hướng sau 3 giây (có thể điều chỉnh) -->
+    </script>
+    {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('update_profile') }}">
+        <div class="form-floating mb-3 mt-3">
+            <label for="name">Họ và tên:</label>
+            <input type="name" class="form-control" id="name" placeholder="Enter name" name="name" required
+                   value="{{ user_name }}">
+        </div>
+        <div class="form-floating mb-3 mt-3">
+            <label for="mail">Email:</label>
+            <input type="email" class="form-control" id="mail" placeholder="Enter email" name="mail" required>
+        </div>
+
+        <div class="form-floating mb-3 mt-3">
+            <label for="phone">Số điện thoại:</label>
+            <input type="tel" class="form-control" id="phone" placeholder="Enter phone" name="phone" required
+                   value="{{ user_phone }}">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Cập nhật</button>
+    </form>
+</body>
+</html>
