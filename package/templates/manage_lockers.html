@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quản lý tủ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            text-align: center;
+            padding: 10px;
+        }
+    <style>
+            table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    table, th, td {
+        border: 1px solid #ddd;
+    }
+
+    th, td {
+        padding: 30px;
+        text-align: left;
+    }
+
+
+    th {
+        background-color: #333;
+        color: white;
+    }
+
+    form {
+        margin-top: 20px;
+    }
+
+    input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        margin: 5px 0;
+        box-sizing: border-box;
+    }
+
+    button[type="submit"] {
+        background-color: #333;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        cursor: pointer;
+    }
+
+    button[type="submit"]:hover {
+        background-color: #555;
+    }
+
+    h1 {
+        text-align: center;
+    }
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    input[type="text"] {
+        padding: 10px;
+        margin: 5px 0;
+        box-sizing: border-box;
+        width: 100%;
+    }
+    table, form {
+        margin: 0 auto;
+        max-width: 800px;
+    }
+    </style>
+</head>
+<body>
+<header>
+    <div>
+        <nav class="navbar navbar-inverse">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#">Hệ thống quản lý</a>
+                </div>
+                <ul class="nav navbar-nav">
+                    <li><a href="/manage_lockers">Quản lý tủ locker</a></li>
+                    <li><a href="/manage_users">Quản lý người dùng</a></li>
+                    <li><a href="/view_logs">Xem nhật ký hoạt động</a></li>
+                    <li class="dropdown">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Xin chào, {{ user_name }}
+                            <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#">Thông tin cá nhân</a></li>
+                            <li><a href="/logout">Đăng xuất</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+</header>
+    <h1>Quản lý tủ</h1>
+    <table>
+        <tr>
+            <th>Locker ID</th>
+            <th>Location</th>
+            <th>Status</th>
+        </tr>
+        {% for locker in lockers %}
+        <tr>
+            <td>{{ locker[0] }}</td>
+            <td>{{ locker[1] }}</td>
+            <td>{{ locker[2] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+<form action="/add_locker" method="post">
+    <h2>Thêm tủ</h2>
+    <input type="text" name="locker_id" placeholder="Mã tủ" required>
+    <input type="text" name="location" placeholder="Vị trí" required>
+    <input type="text" name="status" placeholder="Trạng thái" required>
+    <button type="submit">Thêm</button>
+</form>
+
+    <form action="/edit_locker" method="post">
+        <h2>Sửa tủ</h2>
+        <input type="text" name="locker_id" placeholder="Mã tủ cần sửa" required>
+        <input type="text" name="new_location" placeholder="Vị trí mới" required>
+        <input type="text" name="new_status" placeholder="Trạng thái mới" required>
+        <button type="submit">Sửa</button>
+    </form>
+
+    <!-- Biểu mẫu xóa tủ -->
+    <form action="/delete_locker" method="post">
+        <h2>Xóa tủ</h2>
+        <input type="text" name="locker_id" placeholder="Mã tủ cần xóa" required>
+        <button type="submit">Xóa</button>
+    </form>
+<script>
+    document.querySelector('form[action="/add_locker"]').addEventListener('submit', function(event) {
+        event.preventDefault();
+    });
+
+    document.querySelector('form[action="/edit_locker"]').addEventListener('submit', function(event) {
+        event.preventDefault();
+    });
+
+    document.querySelector('form[action="/delete_locker"]').addEventListener('submit', function(event) {
+        event.preventDefault();
+    });
+
+</script>
+</body>
+</html>
