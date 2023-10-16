@@ -13,9 +13,16 @@
             margin: 0;
             padding: 0;
         }
-        header {
-            text-align: center;
+                header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #5D5C61;
+            color: white;
             padding: 10px;
+        }
+        header a{
+            color:white;
         }
         .container {
             max-width: 400px;
@@ -58,60 +65,55 @@
 </head>
 <body>
     <header>
-        <div>
-            <nav class="navbar navbar-inverse">
-                <div class="container-fluid">
-                    <div class="navbar-header">
-                        <a class="navbar-brand" href="#">SMART-LOCKER</a>
-                    </div>
-                    <ul class="nav navbar-nav">
-                        <li><a href="{{ url_for('home') }}">Trang chủ</a></li>
-                        <li><a href="{{ url_for('register') }}">Đăng ký</a></li>
-                        <li><a href="{{ url_for('login') }}">Đăng nhập</a></li>
-                    </ul>
-                </div>
-            </nav>
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">SMART-LOCKER</a>
         </div>
+        <ul class="nav navbar-nav">
+            <li><a href="{{ url_for('home') }}">Trang chủ</a></li>
+            <li><a href="{{ url_for('register') }}">Đăng ký</a></li>
+            <li><a href="{{ url_for('login') }}">Đăng nhập</a></li>
+        </ul>
     </header>
     <div class="container">
-    <form method="POST" action="{{ url_for('register') }}">
-        <h2>Đăng ký</h2>
-        <div class="form-group">
-            <label for="name">Họ và tên:</label>
-            <input type="name" class="form-control" id="name" placeholder="Họ và tên" name="name" required>
-        </div>
-        <div class="form-group">
-            <label for="email">Email:</label>
-            <input type="email" class="form-control" id="email" placeholder="Email" name="email" required>
-            {% if email_exists %}
+        <form method="POST" action="{{ url_for('register') }}">
+            <h2>Đăng ký</h2>
+            <div class="form-group">
+                <label for="name">Họ và tên:</label>
+                <input type="name" class="form-control" id="name" placeholder="Họ và tên" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" class="form-control" id="email" placeholder="Email" name="email" required>
+                {% if email_exists %}
                 <p class="error-message">Email đã tồn tại.</p>
-            {% endif %}
-        </div>
-        <div class="form-group">
-            <label for="phone">Số điện thoại:</label>
-            <input type="tel" class="form-control" id="phone" placeholder="Số điện thoại " name="phone" required>
-            {% if phone_exists %}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="phone">Số điện thoại:</label>
+                <input type="tel" class="form-control" id="phone" placeholder="Số điện thoại " name="phone" required>
+                {% if phone_exists %}
                 <p class="error-message">Số điện thoại đã tồn tại.</p>
-            {% endif %}
-        </div>
-        <div class="form-group">
-            <label for="password">Mật khẩu:</label>
-            <input type="password" class="form-control" id="password" placeholder="Mật khẩu" name="password" required>
-        </div>
-        <div class="form-group">
-            <label for="confirm_password">Xác nhận mật khẩu:</label>
-            <input type="password" class="form-control" id="confirm_password" placeholder="Xác nhận lại mật khẩu " name="confirm_password" required>
-        </div>
-        <div class="form-group">
-            <label for="role">Quyền:</label>
-            <select id="role" name="role">
-                <option value="user">Người dùng</option>
-                <option value="delivery">Người giao hàng</option>
-            </select>
-        </div>
-        <button type="submit" class="btn btn-primary">Đăng ký</button>
-    </form>
-    <p class="p-center">Đã có tài khoản? <a href="{{ url_for('login') }}">Đăng nhập</a></p>
-</div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="password">Mật khẩu:</label>
+                <input type="password" class="form-control" id="password" placeholder="Mật khẩu" name="password" required>
+            </div>
+            <div class="form-group">
+                <label for="confirm_password">Xác nhận mật khẩu:</label>
+                <input type="password" class="form-control" id="confirm_password" placeholder="Xác nhận lại mật khẩu "
+                       name="confirm_password" required>
+            </div>
+            <div class="form-group">
+                <label for="role">Quyền:</label>
+                <select id="role" name="role">
+                    <option value="user">Người dùng</option>
+                    <option value="delivery">Người giao hàng</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Đăng ký</button>
+        </form>
+        <p class="p-center">Đã có tài khoản? <a href="{{ url_for('login') }}">Đăng nhập</a></p>
+    </div>
 </body>
 </html>

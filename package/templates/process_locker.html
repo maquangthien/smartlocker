@@ -14,8 +14,15 @@
             padding: 0;
         }
         header {
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #5D5C61;
+            color: white;
             padding: 10px;
+        }
+        header a {
+            color: white;
         }
         container {
             max-width: 1200px;
@@ -23,86 +30,90 @@
             padding: 20px;
         }
         footer {
-           text-align: center;
+            text-align: center;
             clear: both;
             padding: 10px;
             position: fixed;
             bottom: 0;
             width: 100%;
         }
-        h1{
-        text-align: center;
+        h1 {
+            text-align: center;
         }
 
-        .dropdown-submenu {
-            position: relative;
+        .form-floating {
+            margin-bottom: 20px;
+            margin-top: 20px;
         }
 
-        .dropdown-submenu .dropdown-menu {
-            top: 0;
-            left: 100%;
-            margin-top: -1px;
+        .form-floating label {
+            font-weight: bold;
+        }
+
+        input[type="submit"] {
+            display: block;
+            margin: 0 auto;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
-<header>
-    <div>
-        <nav class="navbar navbar-inverse">
-            <div class="container-fluid">
-                <div class="navbar-header">
-                    <a class="navbar-brand" href="#">SMART-LOCKER</a>
-                </div>
-                <ul class="nav navbar-nav">
-                    <li><a href="">Trang chủ</a></li>
-                    <li><a href="">Thông báo</a></li>
-                    <li><a href="">Lịch sử dùng tủ</a></li>
-                    <li class="dropdown">
-                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Xin chào, {{ user_name }}
-                            <span class="caret"></span></a>
-                        <ul class="dropdown-menu">
-                            <li><a href="#">Thông tin cá nhân</a></li>
-                            <li><a href="#">Lịch sử đặt hàng</a></li>
-                            <li><a href="/logout">Đăng xuất</a></li>
-                        </ul>
-                    </li>
-                    <li><a href="{{ url_for('receiver_verify_otp') }}">Nhập mã otp nhận hàng</a></li>
+    <header>
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">SMART-LOCKER</a>
+        </div>
+        <ul class="nav navbar-nav">
+            <li><a href="">Trang chủ</a></li>
+            <li><a href="">Thông báo</a></li>
+            <li><a href="/history">Lịch sử dùng tủ</a></li>
+            <li><a href="{{ url_for('receiver_verify_otp') }}">Nhập mã otp nhận hàng</a></li>
+            <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">Xin chào, {{ user_name }}
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a href="{{ url_for('update_profile') }}">Thông tin cá nhân</a></li>
+                    <li><a href="/logout">Đăng xuất</a></li>
                 </ul>
+            </li>
+        </ul>
+    </header>
+    <container>
+        <h1>Đặt lịch sử dùng Smart Locker</h1>
+        <form action="/process_locker" method="post">
+            <div class="form-floating mb-3 mt-3">
+                <label for="name">Họ và tên:</label>
+                <input type="name" class="form-control" id="name" placeholder="Enter name" name="name" required>
             </div>
-        </nav>
-    </div>
-
-</header>
-<container>
-    <h1>Đặt lịch sử dụng Smart Locker</h1>
-    <form action="/process_locker" method="post">
-        <div class="form-floating mb-3 mt-3">
-            <label for="name">Họ và tên:</label>
-            <input type="name" class="form-control" id="name" placeholder="Enter name" name="name" required>
-        </div>
-        <div class="form-floating mb-3 mt-3">
-            <label for="mail">Email:</label>
-            <input type="mail" class="form-control" id="mail" placeholder="Enter email" name="mail" required>
-        </div>
-        <div class="form-floating mb-3 mt-3">
-            <label for="phone">Số điện thoại:</label>
-            <input type="tel" class="form-control" id="phone" placeholder="Enter phone" name="phone" required>
-        </div>
-        <div class="form-floating mb-3 mt-3">
-            <label for="name1">Họ và tên người nhận:</label>
-            <input type="name1" class="form-control" id="name1" placeholder="Enter name" name="name1" required>
-        </div>
-        <div class="form-floating mb-3 mt-3">
-            <label for="phone1">Số điện thoại người nhận:</label>
-            <input type="tel" class="form-control" id="phone1" placeholder="Enter phone" name="phone1" required>
-        </div>
-        <label for="start_time">Thời gian đặt:</label>
-        <input type="datetime-local" id="start_time" name="start_time" required><br><br>
-        </select><br><br>
-
-        <input type="submit" value="Đặt tủ ">
-    </form>
-</container>
-
+            <div class="form-floating mb-3 mt-3">
+                <label for="mail">Email:</label>
+                <input type="mail" class="form-control" id="mail" placeholder="Enter email" name="mail" required>
+            </div>
+            <div class="form-floating mb-3 mt-3">
+                <label for="phone">Số điện thoại:</label>
+                <input type="tel" class="form-control" id="phone" placeholder="Enter phone" name="phone" required>
+            </div>
+            <div class="form-floating mb-3 mt-3">
+                <label for="name1">Họ và tên người nhận:</label>
+                <input type="name1" class="form-control" id="name1" placeholder="Enter name" name="name1" required>
+            </div>
+            <div class="form-floating mb-3 mt-3">
+                <label for="phone1">Số điện thoại người nhận:</label>
+                <input type="tel" class="form-control" id="phone1" placeholder="Enter phone" name="phone1" required>
+            </div>
+            <label for="start_time">Thời gian đặt:</label>
+            <input type="datetime-local" id="start_time" name="start_time" required><br><br>
+            <input type="submit" value="Đặt tủ ">
+        </form>
+    </container>
 </body>
 </html>

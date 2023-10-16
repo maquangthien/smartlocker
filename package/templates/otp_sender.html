@@ -2,14 +2,93 @@
 <html>
 <head>
     <title>Xác thực OTP Sender</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #5D5C61;
+            color: white;
+            padding: 10px;
+        }
+        header a {
+            color: white;
+        }
+        .center-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+            margin: 5% auto;
+            max-width: 400px;
+        }
+        .center-container form {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .center-container form label {
+            margin: 10px 0;
+        }
+        .center-container form button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .center-container form button:hover {
+            background-color: #2980b9;
+        }
+    </style>
 </head>
 <body>
-    <h1>Xác thực OTP Sender</h1>
-    <form action="/unlock_locker" method="post">
-        <input type="hidden" name="otp_sender" value="{{ otp_sender }}">
-        <label for="otp">Nhập mã OTP:</label>
-        <input type="text" id="otp" name="otp" required>
-        <button type="submit">Xác thực và mở tủ</button>
-    </form>
+    <header>
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">SMART-LOCKER</a>
+        </div>
+        <ul class="nav navbar-nav">
+            <li><a href="">Trang chủ</a></li>
+            <li><a href="">Thông báo</a></li>
+            <li><a href="/history">Lịch sử dùng tủ</a></li>
+            <li><a href="{{ url_for('receiver_verify_otp') }}">Nhập mã otp nhận hàng</a></li>
+            <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">Xin chào, {{ user_name }}
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a href="{{ url_for('update_profile') }}">Thông tin cá nhân</a></li>
+                    <li><a href="/logout">Đăng xuất</a></li>
+                </ul>
+            </li>
+        </ul>
+    </header>
+    <div class="center-container">
+        <h1>Xác thực OTP Sender</h1>
+        <form action="/unlock_locker" method="post">
+            <input type="hidden" name="otp_sender" value="{{ otp_sender }}">
+            <label for="otp">Nhập mã OTP:</label>
+            <input type="text" id="otp" name="otp" required>
+            <br>
+            <button type="submit">Xác thực và mở tủ</button>
+        </form>
+    </div>
 </body>
 </html>

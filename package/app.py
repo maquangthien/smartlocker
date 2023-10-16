@@ -6,6 +6,8 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import smtplib
 import string
+from flask import flash
+from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
@@ -40,6 +42,9 @@ def home():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    phone_exists = False
+    email_exists = False
+
     if request.method == 'POST':
         name = request.form['name']
         email = request.form['email']
@@ -55,26 +60,33 @@ def register():
         cursor.execute("SELECT role_id FROM roles WHERE role_name = %s", (role,))
         role_id = cursor.fetchone()[0]
 
-        # Kiểm tra xem số điện thoại đã tồn tại hay chưa
         cursor.execute("SELECT phone FROM users WHERE phone = %s", (phone,))
-        existing_user = cursor.fetchone()
-        if existing_user:
-            return "Số điện thoại đã tồn tại. Vui lòng nhập số điện thoại khác."
+        existing_user_by_phone = cursor.fetchone()
+        phone_exists = existing_user_by_phone is not None
 
-        user_id = generate_user_id()
+        cursor.execute("SELECT mail FROM users WHERE mail = %s", (email,))
+        existing_user_by_email = cursor.fetchone()
+        email_exists = existing_user_by_email is not None
 
-        insert_query = "INSERT INTO users (user_id, name, mail, phone, role_id, password) VALUES (%s, %s, %s, %s, %s, %s)"
-        values = (user_id, name, email, phone, role_id, password)
-        cursor.execute(insert_query, values)
+        if phone_exists:
+            error_message = "Số điện thoại đã tồn tại."
+        elif email_exists:
+            error_message = "Email đã tồn tại. "
+        else:
+            user_id = generate_user_id()
 
-        db.commit()
-        cursor.close()
+            insert_query = "INSERT INTO users (user_id, name, mail, phone, role_id, password) VALUES (%s, %s, %s, %s, %s, %s)"
+            values = (user_id, name, email, phone, role_id, password)
+            cursor.execute(insert_query, values)
 
-        return redirect(url_for('login'))
+            db.commit()
+            cursor.close()
+
+            return redirect(url_for('login'))
+
+        return render_template('register.html', error_message=error_message, phone_exists=phone_exists, email_exists=email_exists)
 
     return render_template('register.html')
-
-from flask import flash, redirect
 
 @app.route('/update_profile', methods=['GET', 'POST'])
 def update_profile():
@@ -99,7 +111,7 @@ def update_profile():
 
             cursor.close()
 
-            flash('Cập nhật thông tin cá nhân thành công', 'success')  # Thêm thông báo thành công
+            flash('Cập nhật thông tin cá nhân thành công', 'success')
             return redirect(url_for('process_locker'))
 
         cursor.execute("SELECT name, mail, phone FROM users WHERE user_id = %s", (user_id,))
@@ -113,10 +125,10 @@ def update_profile():
 
     return "Vui lòng đăng nhập để cập nhật thông tin cá nhân."
 
-
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    valid_credentials = True
+    error_message = None
     if request.method == 'POST':
         phone = request.form['phone']
         password = request.form['password']
@@ -139,19 +151,16 @@ def login():
             elif role_id == '1':
                 return render_template('admin.html', user_name=user_name)
             else:
-                error_message = "Vai trò không hợp lệ."
-                return render_template('login.html', error_message=error_message)
+                valid_credentials = False
 
         else:
+            valid_credentials = False
             error_message = "Sai số điện thoại hoặc mật khẩu. Vui lòng thử lại."
-            return render_template('login.html', error_message=error_message)
 
-    return render_template('login.html')
-
+    return render_template('login.html', valid_credentials=valid_credentials, error_message=error_message)
 
 @app.route('/user')
 def user():
-
     if 'user_id' in session:
         return render_template('user.html')
     else:
@@ -256,7 +265,6 @@ def generate_random_code():
     return code
 
 def generate_otp():
-    # Sinh mã OTP ngẫu nhiên, ví dụ mã OTP gồm 4 chữ số
     return str(random.randint(1000, 9999))
 
 def send_otp_sender(mail, otp_sender):
@@ -265,7 +273,6 @@ def send_otp_sender(mail, otp_sender):
     smtp_username = "2051010118huyen@ou.edu.vn"
     smtp_password = "nguyenthithuhuyen"
 
-    # Tạo email
     msg = MIMEMultipart()
     msg['From'] = "2051010118huyen@ou.edu.vn"
     msg['To'] = mail
@@ -286,7 +293,6 @@ def send_otp_sender(mail, otp_sender):
         return False
 @app.route('/otp_sender')
 def otp_sender():
-    # Kiểm tra xem có mã OTP trong biến session không
     if 'otp_sender' in session:
         otp_sender = session['otp_sender']
         return render_template('otp_sender.html', otp_sender=otp_sender)
@@ -297,7 +303,7 @@ def otp_sender():
 def unlock_locker():
     if request.method == 'POST':
         otp_sender = request.form['otp_sender']
-        codeorders = session.get('codeorders')  # Lấy giá trị codeorders từ session
+        codeorders = session.get('codeorders')
 
         # Kiểm tra xác thực OTP
         if otp_sender == session.get('otp_sender'):
@@ -314,7 +320,6 @@ def unlock_locker():
                 cursor.execute("UPDATE lockers SET status = 'on' WHERE locker_id = %s", (locker_id,))
                 db.commit()
 
-                # Tạo mã ngẫu nhiên
                 otp_processing = generate_otp()
                 code_orders = generate_random_code()
 
@@ -326,28 +331,23 @@ def unlock_locker():
                     user_sender = history_info[0]
                     start_time = history_info[1]
 
-                    # Tiến hành cập nhật thông tin vào bảng otpprocessing
                     cursor.execute(
                         "INSERT INTO otpprocessing (user_id, locker_id, otp, codeorders) VALUES (%s, %s, %s, %s)",
                         (user_sender, locker_id, otp_sender, codeorders)
                     )
                     db.commit()
                 else:
-                    # Xử lý trường hợp không tìm thấy thông tin trong bảng histories
                     return "Không tìm thấy thông tin từ bảng histories."
 
                 db.commit()
 
                 cursor.close()
 
-                # Xóa mã OTP sau khi sử dụng
                 session.pop('otp_sender', None)
 
                 return render_template('unlock_success.html', locker_number=locker_id)
 
-    # Nếu xác thực không thành công hoặc không có OTP, chuyển hướng về trang process_locker.html
     return redirect(url_for('process_locker'))
-
 
 def send_otp_deliver(mail, otp_deliver):
     smtp_server = "smtp.gmail.com"
@@ -365,7 +365,6 @@ def send_otp_deliver(mail, otp_deliver):
     msg.attach(MIMEText(body, 'plain'))
 
     try:
-        # Gửi email
         server = smtplib.SMTP(smtp_server, smtp_port)
         server.starttls()
         server.login(smtp_username, smtp_password)
@@ -375,7 +374,6 @@ def send_otp_deliver(mail, otp_deliver):
     except Exception as e:
         print(f"Lỗi khi gửi email: {str(e)}")
         return False
-
 
 @app.route('/close_locker', methods=['POST'])
 def close_locker():
@@ -410,7 +408,6 @@ def close_locker():
                             (shipper_user_id[0], codeorders)
                         )
 
-                        # Kiểm tra xem có bất kỳ bản ghi nào có cùng giá trị codeorders
                         cursor.execute("SELECT otpprocessing_id FROM otpprocessing WHERE codeorders = %s",
                                        (codeorders,))
                         otpprocessing_record = cursor.fetchone()
@@ -418,7 +415,6 @@ def close_locker():
                         if otpprocessing_record:
                             otpprocessing_id = otpprocessing_record[0]
 
-                            # Cập nhật user_id và otp trong bảng otpprocessing
                             cursor.execute(
                                 "UPDATE otpprocessing SET user_id = %s, otp = %s WHERE otpprocessing_id = %s",
                                 (shipper_user_id[0], otp_deliver, otpprocessing_id)
@@ -428,7 +424,7 @@ def close_locker():
 
                         cursor.close()
 
-                        return f"Tủ số {locker_id} đã được đóng và kết thúc. Mã OTP_deliver đã được gửi đến người giao hàng."
+                        return render_template('process_locker.html')
                     else:
                         return "Gửi mã OTP_deliver không thành công."
                 else:
@@ -439,6 +435,8 @@ def close_locker():
             return "Không tìm thấy mã OTP_deliver trong bảng otps."
     else:
         return "Không có tủ trống nào để đóng và kết thúc."
+
+
 
 @app.route('/otp_delivery', methods=['GET'])
 def otp_delivery():
@@ -471,7 +469,6 @@ def locker_opened():
 
     locker_id = locker_id_result[0] if locker_id_result else None
 
-    # Truy vấn số tủ được mở và số tủ có truy cập bằng codeorders
     cursor = db.cursor()
     cursor.execute("SELECT COUNT(*) FROM otpprocessing WHERE codeorders = %s", (session['codeorders'],))
     opened_lockers_result = cursor.fetchone()
@@ -489,16 +486,13 @@ def finish_delivery():
         locker_id = request.form.get('locker_id')  # Lấy giá trị locker_id từ biểu mẫu
 
         if locker_id:
-            # Cập nhật trạng thái của tủ có locker_id tương ứng thành "off"
             cursor.execute("UPDATE lockers SET status = 'off' WHERE locker_id = %s", (locker_id,))
             db.commit()
 
-            # Kiểm tra xem còn tủ nào trống (status='off') không
             cursor.execute("SELECT locker_id FROM lockers WHERE status = 'off'")
             available_lockers = cursor.fetchall()
 
             if available_lockers:
-                # Nếu còn tủ trống, chọn ngẫu nhiên một tủ
                 chosen_locker = random.choice(available_lockers)
                 chosen_locker_id = chosen_locker[0]
 
@@ -511,7 +505,6 @@ def finish_delivery():
                 # Lưu chosen_locker_id vào biến session để sử dụng sau này
                 session['chosen_locker_id'] = chosen_locker_id
 
-                # Chuyển hướng người giao hàng đến trang nhập OTP lần thứ hai
                 return render_template('otp_second_input.html')
 
     return "Không tìm thấy giá trị locker_id trong dữ liệu POST."
@@ -668,13 +661,10 @@ def complete_receiver():
                 # Cập nhật trạng thái tủ locker_id trong bảng lockers về 'off'
                 cursor.execute("UPDATE lockers SET status = 'off' WHERE locker_id = %s", (locker_id,))
 
-                # Lấy giá trị codeorders từ bảng otpprocessing dựa trên mã OTP
                 cursor.execute("SELECT codeorders FROM otpprocessing WHERE otp = %s", (entered_otp,))
                 codeorders = cursor.fetchone()
                 if codeorders:
-                    codeorders = codeorders[0]  # Lấy giá trị codeorders từ tuple
-
-                    # Cập nhật thời gian kết thúc đơn hàng (end_time) vào bảng histories
+                    codeorders = codeorders[0]
                     current_time = datetime.now()
                     end_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
                     cursor.execute("UPDATE histories SET end_time = %s WHERE codeorders = %s",
@@ -699,7 +689,126 @@ def complete_receiver():
         return "Vui lòng đăng nhập để xác thực OTP và hoàn thành việc lấy hàng."
 
 
+@app.route('/manage_lockers')
+def manage_lockers():
+    cursor = db.cursor()
+    cursor.execute("SELECT locker_id, location, status FROM lockers")
+    lockers = cursor.fetchall()
+    cursor.close()
+    return render_template('manage_lockers.html', lockers=lockers)
+
+@app.route('/add_locker', methods=['POST'])
+def add_locker():
+    if request.method == 'POST':
+        # Xử lý thêm tủ vào cơ sở dữ liệu dựa trên dữ liệu biểu mẫu
+        locker_id = request.form['locker_id']
+        location = request.form['location']
+        status = request.form['status']
+
+        cursor = db.cursor()
+        insert_query = "INSERT INTO lockers (locker_id, location, status) VALUES (%s, %s, %s)"
+        values = (locker_id, location, status)
+        cursor.execute(insert_query, values)
+        db.commit()
+        cursor.close()
+
+    return redirect(url_for('manage_lockers'))
+
+@app.route('/edit_locker', methods=['POST'])
+def edit_locker():
+    if request.method == 'POST':
+        # Xử lý sửa tủ dựa trên dữ liệu biểu mẫu
+        locker_id = request.form['locker_id']
+        new_location = request.form['new_location']
+        new_status = request.form['new_status']
+
+        cursor = db.cursor()
+        cursor.execute("UPDATE lockers SET location = %s, status = %s WHERE locker_id = %s",
+                       (new_location, new_status, locker_id))
+        db.commit()
+        cursor.close()
+
+    return redirect(url_for('manage_lockers'))
+
+@app.route('/delete_locker', methods=['POST'])
+def delete_locker():
+    if request.method == 'POST':
+        # Xử lý xóa tủ dựa trên mã tủ
+        locker_id = request.form['locker_id']
+
+        cursor = db.cursor()
+        cursor.execute("DELETE FROM lockers WHERE locker_id = %s", (locker_id,))
+        db.commit()
+        cursor.close()
+
+    return redirect(url_for('manage_lockers'))
 
 
+@app.route('/manage_users', methods=['GET', 'POST'])
+def manage_users():
+    if request.method == 'POST':
+        # Thêm tài khoản
+        if request.form.get('action') == 'add':
+            user_id = request.form['user_id']
+            name = request.form['name']
+            mail = request.form['mail']
+            phone = request.form['phone']
+            role_id = request.form['role_id']
+            password = request.form['password']
+
+            cursor.execute("INSERT INTO users (user_id, name, mail, phone, role_id, password) VALUES (%s, %s, %s, %s, %s, %s)",
+                           (user_id, name, mail, phone, role_id, password))
+            db.commit()
+
+        # Sửa tài khoản
+        elif request.form.get('action') == 'edit':
+            user_id = request.form['user_id']
+            new_name = request.form['new_name']
+            new_mail = request.form['new_mail']
+            new_phone = request.form['new_phone']
+            new_role_id = request.form['new_role_id']
+            new_password = request.form['new_password']
+
+            cursor.execute("UPDATE users SET name = %s, mail = %s, phone = %s, role_id = %s, password = %s WHERE user_id = %s",
+                           (new_name, new_mail, new_phone, new_role_id, new_password, user_id))
+            db.commit()
+
+        # Xóa tài khoản
+        elif request.form.get('action') == 'delete':
+            user_id = request.form['user_id']
+
+            cursor.execute("DELETE FROM users WHERE user_id = %s", (user_id,))
+            db.commit()
+
+    # Lấy dữ liệu từ bảng users
+    cursor.execute("SELECT user_id, name, mail, phone, role_id, password FROM users")
+    users = cursor.fetchall()
+
+    return render_template('manage_users.html', users=users)
+
+
+@app.route('/view_logs')
+def view_logs():
+    cursor.execute("SELECT codeorders, user_sender, user_deliver, user_receiver, start_time, end_time FROM histories")
+
+    logs = cursor.fetchall()
+
+    cursor.close()
+    db.close()
+
+    return render_template('manage_history.html', logs=logs)
+
+@app.route('/search_logs', methods=['POST'])
+def search_logs():
+    if request.method == 'POST':
+        search_text = request.form['search_text'].lower()
+        cursor.execute("SELECT codeorders, user_sender, user_deliver, user_receiver, start_time, end_time FROM histories "
+                       "WHERE LOWER(codeorders) LIKE %s OR LOWER(user_sender) LIKE %s",
+                       (f"%{search_text}%", f"%{search_text}%"))
+        logs = cursor.fetchall()
+        cursor.close()
+        db.close()
+
+        return render_template('manage_history.html', logs=logs)
 if __name__ == '__main__':
     app.run()

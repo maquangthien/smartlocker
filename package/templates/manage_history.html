@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Xem nhật ký hoạt động</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            text-align: center;
+            padding: 10px;
+        }
+
+            table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    table, th, td {
+        border: 1px solid #ddd;
+    }
+
+    th, td {
+        padding: 30px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #333;
+        color: white;
+    }
+    h1 {
+        text-align: center;
+    }
+    </style>
+</head>
+<body>
+<header>
+    <div>
+        <nav class="navbar navbar-inverse">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#">Hệ thống quản lý</a>
+                </div>
+                <ul class="nav navbar-nav">
+                    <li><a href="/manage_lockers">Quản lý tủ locker</a></li>
+                    <li><a href="/manage_users">Quản lý người dùng</a></li>
+                    <li><a href="/view_logs">Xem nhật ký hoạt động</a></li>
+                    <li class="dropdown">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Xin chào, {{ user_name }}
+                            <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#">Thông tin cá nhân</a></li>
+                            <li><a href="/logout">Đăng xuất</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+</header>
+<h1>Xem nhật ký hoạt động</h1>
+
+<input type="text" id="search" placeholder="Tìm kiếm theo User ID hoặc Code Orders">
+<button onclick="searchLogs()">Tìm kiếm</button>
+
+<table>
+    <tr>
+        <th>Code Orders</th>
+        <th>User Sender</th>
+        <th>User Deliver</th>
+        <th>User Receiver</th>
+        <th>Start Time</th>
+        <th>End Time</th>
+    </tr>
+    {% for log in logs %}
+    <tr>
+        <td>{{ log[0] }}</td>
+        <td>{{ log[1] }}</td>
+        <td>{{ log[2] }}</td>
+        <td>{{ log[3] }}</td>
+        <td>{{ log[4] }}</td>
+        <td>{{ log[5] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+<script>
+    function searchLogs() {
+        var searchText = document.getElementById('search').value;
+        searchText = searchText.toLowerCase();
+        var rows = document.querySelector('table').getElementsByTagName('tr');
+        for (var i = 1; i < rows.length; i++) {
+            var codeOrders = rows[i].getElementsByTagName('td')[0].innerText.toLowerCase();
+            var userSender = rows[i].getElementsByTagName('td')[1].innerText.toLowerCase();
+            if (codeOrders.includes(searchText) || userSender.includes(searchText)) {
+                rows[i].style.display = '';
+            } else {
+                rows[i].style.display = 'none';
+            }
+        }
+    }
+</script>
+</body>
+</html>

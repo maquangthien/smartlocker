@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Nhập mã OTP</title>
+    <title>Lịch sử sử dụng tủ</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
@@ -24,38 +24,14 @@
         header a {
             color: white;
         }
-        .center-container {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 20px;
-            background-color: white;
-            border-radius: 5px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-            margin: 5% auto;
-            max-width: 400px;
+        table {
+            width: 100%;
         }
-        .center-container form {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+        th, td {
+            padding: 10px;
         }
-        .center-container form label {
-            margin: 10px 0;
-        }
-        .center-container form button {
-            background-color: #3498db;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .center-container form button:hover {
-            background-color: #2980b9;
+        h1{
+        text-align: center;
         }
     </style>
 </head>
@@ -67,7 +43,8 @@
         <ul class="nav navbar-nav">
             <li><a href="">Trang chủ</a></li>
             <li><a href="">Thông báo</a></li>
-            <li><a href="">Lịch sử giao hàng </a></li>
+            <li><a href="/history">Lịch sử dùng tủ</a></li>
+            <li><a href="{{ url_for('receiver_verify_otp') }}">Nhập mã otp nhận hàng</a></li>
             <li class="dropdown">
                 <a class="dropdown-toggle" data-toggle="dropdown" href="#">Xin chào, {{ user_name }}
                     <span class="caret"></span>
@@ -79,14 +56,24 @@
             </li>
         </ul>
     </header>
-<div class="center-container">
-    <h1>Nhập mã OTP</h1>
-    <form method="POST" action="/validate_otp">
-        <label for="otp">Mã OTP:</label>
-        <input type="text" id="otp" name="otp" required>
-        <br>
-        <input type="submit" value="Xác nhận">
-    </form>
-    </div>
+    <h1>Lịch sử sử dụng tủ</h1>
+    <table border="2">
+        <tr>
+            <th>Mã Đơn Hàng</th>
+            <th>Người Gửi</th>
+            <th>Người Nhận</th>
+            <th>Thời Gian Bắt Đầu</th>
+            <th>Thời Gian Kết Thúc</th>
+        </tr>
+        {% for history in histories %}
+        <tr>
+            <td>{{ history[0] }}</td>
+            <td>{{ history[1] }}</td>
+            <td>{{ history[2] }}</td>
+            <td>{{ history[3] }}</td>
+            <td>{{ history[4] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
 </body>
 </html>

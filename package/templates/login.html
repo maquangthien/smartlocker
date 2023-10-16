@@ -27,10 +27,16 @@
         }
 
         header {
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #5D5C61;
+            color: white;
             padding: 10px;
         }
-
+        header a{
+            color:white;
+        }
         container {
             max-width: 1200px;
             margin: 0 auto;
@@ -49,20 +55,14 @@
 </head>
 <body>
     <header>
-        <div>
-            <nav class="navbar navbar-inverse">
-                <div class="container-fluid">
-                    <div class="navbar-header">
-                        <a class="navbar-brand" href="#">SMART-LOCKER</a>
-                    </div>
-                    <ul class="nav navbar-nav">
-                        <li><a href="{{ url_for('home') }}">Trang chủ</a></li>
-                        <li><a href="{{ url_for('register') }}">Đăng ký</a></li>
-                        <li><a href="{{ url_for('login') }}">Đăng nhập</a></li>
-                    </ul>
-                </div>
-            </nav>
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">SMART-LOCKER</a>
         </div>
+        <ul class="nav navbar-nav">
+            <li><a href="/">Home</a></li>
+            <li><a href="/register">Đăng ký tài khoản</a></li>
+            <li><a href="/login">Đăng nhập</a></li>
+        </ul>
     </header>
     <div class="container">
         <div class="login-container">
@@ -71,16 +71,23 @@
                 <div class="form-group">
                     <label for="phone">Số điện thoại:</label>
                     <input type="text" class="form-control" id="phone" name="phone" required>
+                    {% if not valid_credentials %}
+                    <p style="color: red;">Số điện thoại không đúng. Vui lòng thử lại.</p>
+                    {% endif %}
                 </div>
                 <div class="form-group">
                     <label for="password">Mật khẩu:</label>
                     <input type="password" class="form-control" id="password" name="password" required>
+                    {% if not valid_credentials %}
+                    <p style="color: red;">Mật khẩu không đúng. Vui lòng thử lại.</p>
+                    {% endif %}
                 </div>
+
                 <button type="submit" class="btn btn-primary">Đăng nhập</button>
             </form>
+            <br>
             <p>Chưa có tài khoản? <a href="{{ url_for('register') }}">Đăng ký</a></p>
         </div>
     </div>
-
 </body>
 </html>

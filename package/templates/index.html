@@ -4,94 +4,78 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Locker System</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <style>
-        /* CSS áp dụng trực tiếp lên trang */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f0f0f0;
+            height: 100vh;
         }
-
         header {
-            background-color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #5D5C61;
             color: white;
-            text-align: center;
-            padding: 20px;
+            padding: 10px;
         }
-
-        nav ul {
-            list-style-type: none;
-            margin: 0;
-            padding: 0;
+        header a{
+            color:white;
         }
-
-        nav li {
-            display: inline;
-            margin-right: 20px;
+        .backgroundimage{
+            background-image: url('static/AnhNen.jpg');
+            background-size: cover;
+            background-position: center;
+            height: 100%;
         }
-
-        nav a {
-            text-decoration: none;
-            color: #333;
-            font-weight: bold;
-        }
-
-        section.content {
-            background-color: white;
+        .container {
+            display: flex;
+            justify-content: space-between;
             margin: 20px;
+        }
+        .content {
+            background-color: white;
             padding: 20px;
             border-radius: 5px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        footer {
-            background-color: #333;
-            color: white;
+            width: 35%;
+            margin-left: 2%;
             text-align: center;
-            padding: 10px;
         }
-
-        /* Style cho bảng dữ liệu Lockers và Users (tùy chỉnh theo cần) */
-        table {
-            border-collapse: collapse;
-            width: 100%;
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #333;
+        .center-content {
+            text-align: center;
             color: white;
+            padding: 50px;
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Welcome to Smart Locker System</h1>
-    </header>
-
-    <nav>
-        <ul>
-            <li><a href="/">Home</a></li>
-            <li><a href="/register">Đăng ký tài khoản</a></li>
-            <li><a href="/login">đăng nhập</a></li>
-        </ul>
-    </nav>
-
-    <section class="content">
-        <h2>Lockers</h2>
-        <!-- Locker information goes here -->
-    </section>
-
-    <section class="content">
-        <h2>Users</h2>
-        <!-- User information goes here -->
-    </section>
-
+<header>
+    <div class="navbar-header">
+        <a class="navbar-brand" href="#">SMART-LOCKER</a>
+    </div>
+    <ul class="nav navbar-nav">
+        <li><a href="/">Home</a></li>
+        <li><a href="/register">Đăng ký tài khoản</a></li>
+        <li><a href="/login">Đăng nhập</a></li>
+    </ul>
+</header>
+<div class="backgroundimage">
+    <div class="center-content">
+        <h1>Welcome to Smart Locker</h1>
+    </div>
+    <div class="container">
+        <section class="content">
+            <h2>Đặt tủ</h2>
+        </section>
+        <section class="content">
+            <h2>Lịch sử</h2>
+        </section>
+    </div>
+</div>
 </body>
 </html>

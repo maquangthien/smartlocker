@@ -2,13 +2,89 @@
 <html>
 <head>
     <title>Nhập mã OTP</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #5D5C61;
+            color: white;
+            padding: 10px;
+        }
+        header a {
+            color: white;
+        }
+        .container {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container h1 {
+            margin: 10px 0;
+        }
+        .container label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        .container input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .container button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .container button:hover {
+            background-color: #2980b9;
+        }
+    </style>
 </head>
 <body>
-    <h1>Nhập mã OTP để lấy hàng</h1>
-    <form action="/receiver_otp" method="POST">
-        <label for="otp">Nhập mã OTP:</label>
-        <input type="text" id="otp" name="otp" required><br><br>
-        <input type="submit" value="Xác nhận">
-    </form>
+    <header>
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">SMART-LOCKER</a>
+        </div>
+        <ul class="nav navbar-nav">
+            <li><a href="">Trang chủ</a></li>
+            <li><a href="">Thông báo</a></li>
+            <li><a href="/history">Lịch sử dùng tủ</a></li>
+            <li><a href="{{ url_for('receiver_verify_otp') }}">Nhập mã OTP nhận hàng</a></li>
+            <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">Xin chào, {{ user_name }}
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a href="{{ url_for('update_profile') }}">Thông tin cá nhân</a></li>
+                    <li><a href="/logout">Đăng xuất</a></li>
+                </ul>
+            </li>
+        </ul>
+    </header>
+    <div class="container">
+        <h1>Nhập mã OTP để lấy hàng</h1>
+        <form action="/receiver_otp" method="POST">
+            <label for="otp">Nhập mã OTP:</label>
+            <input type="text" id="otp" name="otp" required>
+            <button type="submit">Xác nhận</button>
+        </form>
+    </div>
 </body>
 </html>

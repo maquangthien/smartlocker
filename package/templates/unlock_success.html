@@ -2,14 +2,109 @@
 <html>
 <head>
     <title>Mở tủ thành công</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #5D5C61;
+            color: white;
+            padding: 10px;
+        }
+        header a {
+            color: white;
+        }
+        .center-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+        }
+        .center-container h1 {
+            margin: 10px 0;
+        }
+        .center-container form button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .center-container form button:hover {
+            background-color: #2980b9;
+        }
+    </style>
 </head>
 <body>
-    <h1>Tủ số {{ locker_number }} đã được mở thành công!</h1>
-    <h1>Vui lòng bỏ hàng vào tủ</h1>
-     <form action="/close_locker" method="POST">
-        <!-- Thêm trường ẩn để chứa giá trị codeorders -->
-        <input type="hidden" name="codeorders" value="{{ codeorders }}">
-        <button type="submit">Đóng cửa tủ, kết thúc!</button>
-    </form>
+    <header>
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">SMART-LOCKER</a>
+        </div>
+        <ul class="nav navbar-nav">
+            <li><a href="">Trang chủ</a></li>
+            <li><a href="">Thông báo</a></li>
+            <li><a href="/history">Lịch sử dùng tủ</a></li>
+            <li><a href="{{ url_for('receiver_verify_otp') }}">Nhập mã otp nhận hàng</a></li>
+            <li class="dropdown">
+                <a class a dropdown-toggle" data-toggle="dropdown" href="#">Xin chào, {{ user_name }}
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a href="{{ url_for('update_profile') }}">Thông tin cá nhân</a></li>
+                    <li><a href="/logout">Đăng xuất</a></li>
+                </ul>
+            </li>
+        </ul>
+    </header>
+    <div class="center-container">
+        <h1>Tủ số {{ locker_number }} đã được mở thành công!</h1>
+        <h1>Vui lòng bỏ hàng vào tủ</h1>
+        <form action="/close_locker" method="POST">
+            <input type="hidden" name="codeorders" value="{{ codeorders }}">
+            <button type="submit" id="closeButton">Đóng cửa tủ, kết thúc!</button>
+        </form>
+    </div>
+    <div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="successModalLabel">Thông báo</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Tủ đã được đóng và kết thúc. Mã OTP_deliver đã được gửi đến người giao hàng.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $('#closeButton').click(function() {
+            $('#successModal').modal('show');
+            setTimeout(function () {
+                window.location.href = "/process_locker";
+            }, 15000);
+        });
+    </script>
 </body>
 </html>
